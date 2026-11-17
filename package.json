@@ -1,0 +1,17 @@
+{
+  "name": "financial-planning-tool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Budgeting, savings goals, loans, investments and alerts",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "db": "node server/show-db.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "nodemailer": "^10.6.0"
+  }
+}

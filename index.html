@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financial Planning Tool</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">₿</span>
+    <div>
+      <h1>Financial Planning Tool</h1>
+      <p class="muted" id="greeting">Plan, track and control your money</p>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="budget">Budget</button>
+    <button data-tab="goals">Savings Goals</button>
+    <button data-tab="loans">Loans</button>
+    <button data-tab="invest">Investments</button>
+    <button data-tab="future">Emergency &amp; Retirement</button>
+    <button data-tab="profile">Profile &amp; Data</button>
+  </nav>
+</header>
+
+<!-- LOGIN / REGISTER (only shown when the app runs on the server) -->
+<div id="auth" class="auth" hidden>
+  <div class="auth-card">
+    <span class="logo">₿</span>
+    <h1>Financial Planning Tool</h1>
+    <p class="muted">Log in to keep your plan safe online and get SMS / email alerts.</p>
+    <div class="auth-tabs">
+      <button type="button" data-auth="login" class="active">Log in</button>
+      <button type="button" data-auth="register">Create account</button>
+    </div>
+    <form id="form-login" class="stack-form">
+      <label>Email <input name="email" type="email" autocomplete="email" required></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="primary">Log in</button>
+    </form>
+    <form id="form-register" class="stack-form" hidden>
+      <label>Full name <input name="name" autocomplete="name" required></label>
+      <label>Email <input name="email" type="email" autocomplete="email" required></label>
+      <label>Phone for SMS alerts (optional) <input name="phone" type="tel" placeholder="0772123456" autocomplete="tel"></label>
+      <label>Password (at least 8 characters) <input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+      <button class="primary">Create account</button>
+    </form>
+    <p id="auth-error" class="neg small" role="alert"></p>
+    <button type="button" class="link" id="btn-offline">Use without an account (saved on this device only)</button>
+  </div>
+</div>
+
+<main>
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tab active">
+    <div class="kpis">
+      <div class="kpi"><span>Total income</span><strong id="k-income">0</strong></div>
+      <div class="kpi"><span>Planned expenses</span><strong id="k-expenses">0</strong></div>
+      <div class="kpi"><span>Balance (income − expenses)</span><strong id="k-balance">0</strong></div>
+      <div class="kpi"><span>Spent so far this month</span><strong id="k-spent">0</strong></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Alerts</h2>
+        <ul id="alerts" class="alerts"></ul>
+      </div>
+      <div class="card">
+        <h2>What to do with your balance</h2>
+        <div id="advice"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Where your money goes</h2>
+        <div id="pie" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Income vs expenses</h2>
+        <div id="bars" class="chart"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Savings goal progress</h2>
+      <div id="dash-goals"></div>
+    </div>
+
+    <div class="card no-print">
+      <h2>Report</h2>
+      <p class="muted">Print this dashboard, or choose “Save as PDF” in the print window to download a PDF report.</p>
+      <button class="primary" id="btn-print">Download PDF report</button>
+    </div>
+  </section>
+
+  <!-- BUDGET -->
+  <section id="tab-budget" class="tab">
+    <div class="grid2">
+      <div class="card">
+        <h2>Income</h2>
+        <form id="form-income" class="row-form">
+          <input name="source" placeholder="Source (e.g. Salary)" required>
+          <input name="amount" type="number" min="0" step="any" placeholder="Amount per month" required>
+          <button class="primary">Add</button>
+        </form>
+        <table class="list"><thead><tr><th>Source</th><th class="num">Amount</th><th></th></tr></thead><tbody id="income-list"></tbody></table>
+      </div>
+
+      <div class="card">
+        <h2>Log spending (track daily)</h2>
+        <form id="form-spend" class="row-form">
+          <select name="category" id="spend-category" required></select>
+          <input name="amount" type="number" min="0" step="any" placeholder="Amount spent" required>
+          <button class="primary">Log</button>
+        </form>
+        <p class="muted small">Adds to the “spent” column of that category. Use “Start new month” to reset spending to zero.</p>
+        <button id="btn-new-month">Start new month</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Expense budget by category</h2>
+      <form id="form-expense" class="row-form">
+        <input name="category" list="cat-suggestions" placeholder="Category (e.g. Food)" required>
+        <datalist id="cat-suggestions">
+          <option>Food</option><option>Rent</option><option>Transport</option><option>School fees</option>
+          <option>Airtime &amp; Data</option><option>Utilities</option><option>Entertainment</option><option>Health</option><option>Others</option>
+        </datalist>
+        <input name="budget" type="number" min="0" step="any" placeholder="Planned per month" required>
+        <button class="primary">Add / update</button>
+      </form>
+      <table class="list">
+        <thead><tr><th>Category</th><th class="num">Planned</th><th class="num">Spent</th><th>Used</th><th></th></tr></thead>
+        <tbody id="expense-list"></tbody>
+      </table>
+      <p id="budget-summary" class="summary"></p>
+    </div>
+  </section>
+
+  <!-- GOALS -->
+  <section id="tab-goals" class="tab">
+    <div class="card">
+      <h2>New savings goal</h2>
+      <p class="muted">Example: save 2,000,000 for a laptop in 10 months → you must save 200,000 per month.</p>
+      <form id="form-goal" class="row-form">
+        <input name="name" placeholder="Goal (e.g. Laptop)" required>
+        <input name="target" type="number" min="1" step="any" placeholder="Target amount" required>
+        <input name="months" type="number" min="1" step="1" placeholder="Months" required>
+        <input name="saved" type="number" min="0" step="any" placeholder="Already saved (optional)">
+        <button class="primary">Create plan</button>
+      </form>
+    </div>
+    <div id="goal-list"></div>
+  </section>
+
+  <!-- LOANS -->
+  <section id="tab-loans" class="tab">
+    <div class="card">
+      <h2>Add a loan</h2>
+      <form id="form-loan" class="row-form">
+        <input name="name" placeholder="Lender / name (e.g. SACCO loan)" required>
+        <input name="amount" type="number" min="1" step="any" placeholder="Loan amount" required>
+        <input name="rate" type="number" min="0" step="any" placeholder="Interest % per year" required>
+        <input name="months" type="number" min="1" step="1" placeholder="Period (months)" required>
+        <label class="inline">Start date <input name="start" type="date" required></label>
+        <select name="method">
+          <option value="reducing">Reducing balance (banks)</option>
+          <option value="flat">Flat rate (many SACCOs / microfinance)</option>
+        </select>
+        <button class="primary">Calculate &amp; save</button>
+      </form>
+    </div>
+    <div id="loan-list"></div>
+  </section>
+
+  <!-- INVEST -->
+  <section id="tab-invest" class="tab">
+    <div class="card">
+      <h2>Compare investment options</h2>
+      <form id="form-invest" class="row-form">
+        <label class="inline">Amount <input name="amount" type="number" min="0" step="any" required></label>
+        <label class="inline">Years <input name="years" type="number" min="0.25" step="0.25" required></label>
+        <label class="inline">Add monthly <input name="monthly" type="number" min="0" step="any" placeholder="0"></label>
+      </form>
+      <p class="muted small">Rates below are editable examples, not live market rates — check current rates with your bank, SACCO, broker or the central bank before investing. Stocks can also lose money.</p>
+      <table class="list">
+        <thead><tr><th>Option</th><th class="num">Rate % / yr</th><th>Risk</th><th class="num">Value at end</th><th class="num">Gain</th></tr></thead>
+        <tbody id="invest-list"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EMERGENCY & RETIREMENT -->
+  <section id="tab-future" class="tab">
+    <div class="grid2">
+      <div class="card">
+        <h2>Emergency fund</h2>
+        <form id="form-emergency" class="stack-form">
+          <label>Months of expenses to cover
+            <select name="months"><option>3</option><option>4</option><option>5</option><option selected>6</option></select>
+          </label>
+          <label>Monthly expenses <input name="monthlyExpenses" type="number" min="0" step="any" placeholder="Uses your budget if empty"></label>
+          <label>Emergency savings you already have <input name="saved" type="number" min="0" step="any"></label>
+        </form>
+        <div id="emergency-result" class="result"></div>
+      </div>
+
+      <div class="card">
+        <h2>Retirement</h2>
+        <form id="form-retire" class="stack-form">
+          <label>Current age <input name="age" type="number" min="15" max="90" required></label>
+          <label>Retirement age <input name="retireAge" type="number" min="30" max="100" required></label>
+          <label>Monthly income wanted in retirement (today's money) <input name="monthlyNeed" type="number" min="0" step="any" required></label>
+          <label>Years in retirement <input name="years" type="number" min="1" max="50" required></label>
+          <label>Savings already set aside <input name="saved" type="number" min="0" step="any"></label>
+          <label>Expected return % / yr <input name="returnRate" type="number" step="any"></label>
+          <label>Inflation % / yr <input name="inflation" type="number" step="any"></label>
+        </form>
+        <div id="retire-result" class="result"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="tab-profile" class="tab">
+    <div class="grid2">
+      <div class="card">
+        <h2>Profile</h2>
+        <form id="form-profile" class="stack-form">
+          <label>Name <input name="name"></label>
+          <label>User type
+            <select name="type">
+              <option>Individual / Student</option><option>Family</option><option>Business / SME</option><option>SACCO / Bank / Advisor</option>
+            </select>
+          </label>
+          <label>Currency <input name="currency" maxlength="5"></label>
+          <label>Family size <input name="familySize" type="number" min="1"></label>
+          <label>Risk level
+            <select name="risk"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+          </label>
+          <label>Warn me when a category reaches (%) <input name="warnAt" type="number" min="10" max="100"></label>
+        </form>
+        <p class="muted small" id="save-note">Saved automatically on this device only. Nothing is sent to any server.</p>
+      </div>
+
+      <div class="card" id="account-card" hidden>
+        <h2>Account &amp; alerts</h2>
+        <p class="muted small">Logged in as <strong id="acc-email"></strong> · <span id="sync-status">Saved</span></p>
+        <form id="form-account" class="stack-form">
+          <label>Phone for SMS alerts <input name="phone" type="tel" placeholder="0772123456"></label>
+          <label class="check"><input name="alertEmail" type="checkbox"> Send alerts by email</label>
+          <label class="check"><input name="alertSms" type="checkbox"> Send alerts by SMS</label>
+          <button class="primary">Save alert settings</button>
+        </form>
+        <p class="muted small">Alerts: 80% of a category budget, overspending, and loan payments due within 3 days. Each alert is sent once.</p>
+        <div class="btn-row">
+          <button id="btn-test-alert">Send test alert</button>
+          <button id="btn-check-alerts">Check alerts now</button>
+          <button id="btn-logout">Log out</button>
+        </div>
+        <details>
+          <summary>Change password</summary>
+          <form id="form-password" class="stack-form">
+            <label>Current password <input name="current" type="password" autocomplete="current-password" required></label>
+            <label>New password <input name="next" type="password" minlength="8" autocomplete="new-password" required></label>
+            <button>Change password</button>
+          </form>
+        </details>
+        <details>
+          <summary>Recent alerts sent</summary>
+          <ul id="sent-alerts" class="alerts"></ul>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>Your data</h2>
+        <div class="btn-col">
+          <button id="btn-sample">Load example data (1,500,000 income)</button>
+          <button id="btn-export">Export backup (JSON)</button>
+          <label class="file-btn">Import backup<input type="file" id="file-import" accept="application/json"></label>
+          <button id="btn-reset" class="danger">Delete all data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
